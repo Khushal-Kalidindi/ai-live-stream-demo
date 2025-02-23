@@ -14,13 +14,13 @@ export default function VideoPlayer({ flex, startTime }: VideoPlayerProps) {
   return (
     <View 
         onLayout={(event) => {
-            // setParentHeight(event.nativeEvent.layout.height);
+            setParentHeight(event.nativeEvent.layout.height);
             setParentWidth(event.nativeEvent.layout.width);
         }}
-        style={[styles.container, {flexGrow: flex}]}>
+        style={[styles.container, {flex: flex}]}>
       {/* <YouTube videoId="VdivYZ3EGsc" width={parentWidth} height={200} play={true}/> */}
       {
-        parentWidth/parentHeight > 1.8 ?
+        parentWidth/parentHeight > 3 ?
         <iframe src= {`https://www.youtube.com/embed/VdivYZ3EGsc?autoplay=1&showinfo=0&controls=0&mute=1&start=${startTime+4}`}
             frameBorder='0'
             allow='autoplay; encrypted-media'

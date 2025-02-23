@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit
 from datetime import datetime
 import pymongo
@@ -75,6 +75,57 @@ def handle_load_messages():
     
     # Send the messages to the client
     emit('load_previous_messages', messages)
+
+# Create an api route to add a scheduled stream, which will be added to the database
+# We will add to a collection called scheduled_streams
+# The scheduled stream will have the following fields:
+# - streamer_name (string)
+# - video_url (string)
+# - stream_title (string)
+# - stream_description (string)
+# - start_time (datetime)
+# - end_time (datetime)
+# - tags (list of strings)
+# - chapters (list of objects), each object will have a timestamp and description
+# Example of a chapter object: {"timestamp": "00:05:30", "description": "Introduction to first topic"}
+@app.route('/add_scheduled_stream', methods=['POST'])
+def add_scheduled_stream():
+    data = request.json
+    streamer_name = data.get("streamer_name")
+    stream_title = data.get("stream_title")
+    stream_description = data.get("stream_description")
+    start_time = data.get("start_time")
+    end_time = data.get("end_time")
+    tags = data.get("tags")
+    video_url = data.get("video_url")
+    chapters = data.get("chapters")
+
+    #TODO: Add validation for the input fields
+    #TODO: Generate chapters for the video and store in the database
+
+    scheduled_stream = {
+        "streamer_name": streamer_name,
+        "video_url": video_url,
+        "stream_title": stream_title,
+        "stream_description": stream_description,
+        "start_time": start_time,
+        "end_time": end_time,
+        "tags": tags,
+        "chapters": chapters,
+    }
+
+    scheduled_streams_collection = db["scheduled_streams"]
+    scheduled_streams_collection.insert_one(scheduled_stream)
+
+    return "Scheduled stream added successfully"
+
+# Create an api route to get all scheduled streams
+@app.route('/get_scheduled_streams', methods=['GET'])
+def get_scheduled_streams():
+    scheduled_streams_collection = db["scheduled_streams"]
+    scheduled_streams = list(scheduled_streams_collection.find())
+
+    return {"scheduled_streams": scheduled_streams}
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)

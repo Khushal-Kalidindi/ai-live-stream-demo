@@ -5,12 +5,10 @@ import { Text, View } from "react-native";
 import VideoPlayer from "@/components/VideoPlayer";
 import StreamDetails from "@/components/StreamDetails";
 import React from "react";
+import { ScheduledStreamProps } from "@/constants/StreamProps";
 
 
-//Dummy chat messages
-
-
-export default function Index() {
+export default function LiveScreen(props: ScheduledStreamProps) {
   return (
     <View
       style={{
@@ -18,7 +16,7 @@ export default function Index() {
       }}
     >
       <VideoPlayer flex={1} startTime={30}/>
-      <StreamDetails />
+      <StreamDetails {...props}/>
       <Chat flex={3} user_id={window.location.port}/>
     </View>
   );
