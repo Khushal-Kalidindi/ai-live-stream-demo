@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "live-demo",
-    "slug": "live-demo",
+    "name": "live-stream-demo",
+    "slug": "live-stream-demo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

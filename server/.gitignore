@@ -1,0 +1,7 @@
+# venv
+Lib/
+Include/
+Scripts/
+
+.env
+*.cfg
