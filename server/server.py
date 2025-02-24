@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit
 from datetime import datetime
 import pymongo
@@ -8,6 +8,9 @@ from pymongo.server_api import ServerApi
 import os
 from dotenv import load_dotenv
 import json
+from bson import ObjectId
+
+
 
 load_dotenv()
 
@@ -51,12 +54,12 @@ def handle_send_message(data):
         "username": data['username'],
         "message": data['message'],
         "usernameColor": data['usernameColor'],
-        "timestamp": str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        "timestamp": datetime.now().isoformat()
     }
     messages_collection.insert_one(message)
     print(message)
-    message.pop('_id', None)
-    message.pop('timestamp', None)
+    message["_id"] = str(message["_id"])
+    # message.pop('timestamp', None)
 
     # Emit the message to all connected clients in real-time
     print("Emitting message to all clients..." + json.dumps(message))
@@ -124,8 +127,25 @@ def add_scheduled_stream():
 def get_scheduled_streams():
     scheduled_streams_collection = db["scheduled_streams"]
     scheduled_streams = list(scheduled_streams_collection.find())
+    for stream in scheduled_streams:
+        stream["_id"] = str(stream["_id"])
 
     return {"scheduled_streams": scheduled_streams}
+
+# Create an api route to get a scheduled stream by id
+@app.route('/get_scheduled_stream/<stream_id>', methods=['GET'])
+def get_scheduled_stream(stream_id):
+    scheduled_streams_collection = db["scheduled_streams"]
+    scheduled_stream = scheduled_streams_collection.find_one({"_id": ObjectId(stream_id)})
+    
+
+    if not scheduled_stream:
+            return jsonify({"error": "Stream not found"}), 404
+        
+    # Convert ObjectId back to string for JSON serialization
+    scheduled_stream["_id"] = str(scheduled_stream["_id"])
+    
+    return jsonify(scheduled_stream)
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)

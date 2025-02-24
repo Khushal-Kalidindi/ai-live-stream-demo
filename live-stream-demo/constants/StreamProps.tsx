@@ -4,6 +4,7 @@ export interface Chapter {
   }
   
   export interface ScheduledStreamProps {
+    _id: string;
     streamer_name: string;
     video_url: string;
     stream_title: string;

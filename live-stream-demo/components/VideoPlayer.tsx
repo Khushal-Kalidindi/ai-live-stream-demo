@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet, Text , Image} from "react-native";
 import YouTube from "react-native-youtube-iframe";
 import YoutubePlayer from "./YouTubePlayer";
 
@@ -36,7 +36,12 @@ export default function VideoPlayer({ flex, startTime }: VideoPlayerProps) {
             title='video'/>
       }
       <View style={styles.overlay}>
-        <Text style={styles.overlayText}>{parentWidth/parentHeight}</Text>
+        {/* <Text style={styles.overlayText}>{parentWidth/parentHeight}</Text> */}
+        {/* Add overlay image from assets/images */}
+        <Image 
+            source={require("../assets/images/pikachu-pokemon-talking.gif")}
+            style={styles.overlayImage} 
+        />
       </View>
     </View>
   );
@@ -52,10 +57,19 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 50,
     left: 50,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(255, 115, 0, 0.69)",
     padding: 10,
-    borderRadius: 10,
+    borderRadius: "50%",
+    width: "20%",
+    aspectRatio: 1,
+    justifyContent: "center", // Center the image
+    alignItems: "center",
   },
+  overlayImage: {
+    resizeMode: "contain", // Ensure the image maintains aspect ratio
+    width: "100%", // Make the image fill the container
+    height: "100%", // Make the image fill the container
+},
   overlayText: {
     color: "white",
     fontSize: 16,

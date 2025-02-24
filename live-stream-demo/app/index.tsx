@@ -1,25 +1,45 @@
-import Chat from "@/components/Chat";
-import ChatMessage from "@/components/ChatMessage";
-import ChatBox from "@/components/ChatBox";
-import { Text, View } from "react-native";
-import VideoPlayer from "@/components/VideoPlayer";
-import StreamDetails from "@/components/StreamDetails";
-import React from "react";
+import { useRouter } from 'expo-router';
+import { ScheduledStreamProps } from '@/constants/StreamProps';
+import { View, Text, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import StreamDetails from '@/components/StreamDetails';
+const StreamListScreen = () => {
+  const [streams, setStreams] = useState([]);
+  const router = useRouter();
 
+  useEffect(() => {
+    // Fetch scheduled streams from localhost:5000
+    const fetchStreams = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/get_scheduled_streams'); // Replace with your API endpoint
+        const data = await response.json();
+        setStreams(data['scheduled_streams']);  // Store the data in the state
+      } catch (error) {
+        console.error('Error fetching streams:', error);
+      }
+    };
 
-//Dummy chat messages
+    fetchStreams();
+  }, []);
 
+  const navigateToLiveScreen = (stream: ScheduledStreamProps) => {
+    router.push({
+      pathname: '/live/[stream_id]',  // Use this dynamic route
+      params: { stream_id: stream._id }, // Pass the stream title and the whole stream object
+    });
+  };
 
-export default function Index() {
   return (
-    <View
-      style={{
-        flex: 1
-      }}
-    >
-      <VideoPlayer flex={1} startTime={30}/>
-      <StreamDetails />
-      <Chat flex={3} user_id={window.location.port}/>
+    console.log(streams),
+    console.log(typeof streams),
+    <View>
+      {streams.map((stream: ScheduledStreamProps) => (
+        <TouchableOpacity key={stream._id} onPress={() => navigateToLiveScreen(stream as ScheduledStreamProps)}>
+          <StreamDetails {...stream} />
+        </TouchableOpacity>
+      ))}
     </View>
   );
-}
+};
+
+export default StreamListScreen;
