@@ -7,8 +7,9 @@ import YoutubePlayer from "./YouTubePlayer";
 interface VideoPlayerProps {
     flex: number;
     startTime: number;
+    videoUrl: string;
 }
-export default function VideoPlayer({ flex, startTime }: VideoPlayerProps) {
+export default function VideoPlayer({ flex, startTime, videoUrl }: VideoPlayerProps) {
   const [parentHeight, setParentHeight] = useState(200);
   const [parentWidth, setParentWidth] = useState(200);
   return (
@@ -21,13 +22,13 @@ export default function VideoPlayer({ flex, startTime }: VideoPlayerProps) {
       {/* <YouTube videoId="VdivYZ3EGsc" width={parentWidth} height={200} play={true}/> */}
       {
         parentWidth/parentHeight > 3 ?
-        <iframe src= {`https://www.youtube.com/embed/VdivYZ3EGsc?autoplay=1&showinfo=0&controls=0&mute=1&start=${startTime+4}`}
+        <iframe src= {`https://www.youtube.com/embed/${videoUrl}?autoplay=1&showinfo=0&controls=0&mute=1&start=${startTime+4}`}
             frameBorder='0'
             allow='autoplay; encrypted-media'
             allowFullScreen
             height={parentHeight}
             title='video'/>:
-        <iframe src= {`https://www.youtube.com/embed/VdivYZ3EGsc?autoplay=1&showinfo=0&controls=0&mute=1&start=${startTime+4}`}
+        <iframe src= {`https://www.youtube.com/embed/${videoUrl}?autoplay=1&showinfo=0&controls=0&mute=1&start=${startTime+4}`}
             frameBorder='0'
             allow='autoplay; encrypted-media'
             allowFullScreen
@@ -55,12 +56,12 @@ const styles = StyleSheet.create({
   },
   overlay: {
     position: "absolute",
-    top: 50,
-    left: 50,
+    top: 0,
+    left: 0,
     backgroundColor: "rgba(255, 115, 0, 0.69)",
     padding: 10,
     borderRadius: "50%",
-    width: "20%",
+    width: "30%",
     aspectRatio: 1,
     justifyContent: "center", // Center the image
     alignItems: "center",

@@ -10,6 +10,20 @@ from dotenv import load_dotenv
 import json
 from bson import ObjectId
 
+import requests
+import os
+import re
+from dotenv import load_dotenv
+from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_community.chat_models import ChatOpenAI
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
+from typing import List, Dict
+import hashlib
+# from pinecone import Pinecone
+import sys
+from tqdm import tqdm
+
 
 
 load_dotenv()
@@ -40,17 +54,55 @@ client = MongoClient(uri, server_api=ServerApi('1'))
 db = client["chat_app"]
 messages_collection = db["messages"]
 
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise ValueError("Please set the OPENAI_API_KEY environment variable")
+def generate_llm_response(query: str, streamer_name: str, stream_title: str) -> str:
+    # context_string = " ".join(doc['metadata']['text'] for doc in context['matches'])
+    prompt_template = (
+        "Context: Your name is {streamer_name} You are the host of a stream, in the middle of doing {stream_title}\n"
+        "{query}\n"
+    )
+
+    llm = ChatOpenAI(temperature=0, model_name="gpt-4", openai_api_key=OPENAI_API_KEY)
+    prompt = PromptTemplate(input_variables=["query", "stream_title", "streamer_name"], template=prompt_template)
+    chain = LLMChain(llm=llm, prompt=prompt)
+
+    try:
+        response = chain.run(query=query, stream_title=stream_title, streamer_name=streamer_name)
+        return response
+    except Exception as e:
+        return f"Error generating LLM response: {str(e)}"
+
 # This is a sample route to check if server is running
 @app.route('/')
 def index():
     return "Flask server is running!"
 
+
+#simple api for client to tell server they joined a stream
+@app.route('/join_stream', methods=['POST'])
+def join_stream():
+    data = request.json
+    print("FUCK")
+    print(data)
+    username = data.get("username")
+    streamer_name = data.get("streamer_name")
+    stream_title = data.get("stream_title")
+    print(f"User joined stream {username}")
+    message = generate_llm_response(f"Greet the user {username} who just joined the stream, help them join in what you are doing", streamer_name=streamer_name, stream_title=stream_title)
+    handle_send_message({"streamer_name": streamer_name, "stream_title": stream_title,"username": streamer_name, "message": message, "usernameColor": "#a83232"})
+    return "User joined stream!"
+
 # SocketIO event to handle sending and receiving messages
 @socketio.on('send_message')
 def handle_send_message(data):
     print(f"Received message from {data['username']}: {data['message']}")
+    print(data)
     # Save message to MongoDB
     message = {
+        "streamer_name": data['streamer_name'],
+        "stream_title": data['stream_title'],
         "username": data['username'],
         "message": data['message'],
         "usernameColor": data['usernameColor'],
@@ -63,7 +115,20 @@ def handle_send_message(data):
 
     # Emit the message to all connected clients in real-time
     print("Emitting message to all clients..." + json.dumps(message))
-    emit('receive_message', json.dumps(message), broadcast=True)
+    emit('receive_message', json.dumps(message), namespace='/', broadcast=True)
+
+    # Get the amount of messages sent so far
+    message_count = messages_collection.count_documents({})
+    # If the message count % 3 == 0, send a message from the bot responding to the last message
+    if message_count % 3 == 0:
+        last_message = messages_collection.find().sort("timestamp", pymongo.DESCENDING).limit(1)[0]
+        l_str = str(last_message["message"])
+        streamer_name = last_message["streamer_name"]
+        stream_title = last_message["stream_title"]
+        bot_message = generate_llm_response(f"Respond to this message in a casual 1-2 sentence response: {l_str}", streamer_name=streamer_name, stream_title=stream_title)
+        print(f"Bot message: {bot_message}")
+        emit('receive_message', json.dumps({"streamer_name": streamer_name, "stream_title": stream_title, "username": streamer_name, "message": bot_message, "usernameColor": "#a83232"}), namespace='/', broadcast=True)
+    
 
 # SocketIO event to load the previous messages (if any)
 @socketio.on('load_messages')

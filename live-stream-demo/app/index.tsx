@@ -3,6 +3,8 @@ import { ScheduledStreamProps } from '@/constants/StreamProps';
 import { View, Text, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import StreamDetails from '@/components/StreamDetails';
+import { StatusBar } from 'expo-status-bar';
+import { Stack } from 'expo-router';
 const StreamListScreen = () => {
   const [streams, setStreams] = useState([]);
   const router = useRouter();
@@ -33,6 +35,7 @@ const StreamListScreen = () => {
     console.log(streams),
     console.log(typeof streams),
     <View>
+      <Stack.Screen options={{ header: () => null }} />
       {streams.map((stream: ScheduledStreamProps) => (
         <TouchableOpacity key={stream._id} onPress={() => navigateToLiveScreen(stream as ScheduledStreamProps)}>
           <StreamDetails {...stream} />

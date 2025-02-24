@@ -10,6 +10,7 @@ import { useRouter } from 'expo-router';
 import { useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect } from "react";
+import { Stack } from 'expo-router';
 
 export default function LiveScreen(props: ScheduledStreamProps) {
   const router = useRouter();
@@ -48,10 +49,11 @@ export default function LiveScreen(props: ScheduledStreamProps) {
         flex: 1
       }}
     >
-      <VideoPlayer flex={1} startTime={30}/>
+      <Stack.Screen options={{ header: () => null }} />
+      <VideoPlayer flex={1} startTime={30} videoUrl={(streamData as ScheduledStreamProps).video_url}/>
       
       <StreamDetails {...streamData as ScheduledStreamProps}/>
-      <Chat flex={3} user_id={window.location.port}/>
+      <Chat flex={3} user_id={window.location.port == "8080" ? "Devin" : "Samantha"} {...streamData as ScheduledStreamProps}/>
     </View>
   );
 }
