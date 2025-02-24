@@ -87,11 +87,12 @@ def join_stream():
     print("FUCK")
     print(data)
     username = data.get("username")
+    stream_id = data.get("stream_id")
     streamer_name = data.get("streamer_name")
     stream_title = data.get("stream_title")
     print(f"User joined stream {username}")
     message = generate_llm_response(f"Greet the user {username} who just joined the stream, help them join in what you are doing", streamer_name=streamer_name, stream_title=stream_title)
-    handle_send_message({"streamer_name": streamer_name, "stream_title": stream_title,"username": streamer_name, "message": message, "usernameColor": "#a83232"})
+    handle_send_message({"stream_id": stream_id, "streamer_name": streamer_name, "stream_title": stream_title,"username": streamer_name, "message": message, "usernameColor": "#a83232"})
     return "User joined stream!"
 
 # SocketIO event to handle sending and receiving messages
@@ -101,6 +102,7 @@ def handle_send_message(data):
     print(data)
     # Save message to MongoDB
     message = {
+        "stream_id": data['stream_id'],
         "streamer_name": data['streamer_name'],
         "stream_title": data['stream_title'],
         "username": data['username'],
@@ -125,9 +127,10 @@ def handle_send_message(data):
         l_str = str(last_message["message"])
         streamer_name = last_message["streamer_name"]
         stream_title = last_message["stream_title"]
+        stream_id = last_message["stream_id"]
         bot_message = generate_llm_response(f"Respond to this message in a casual 1-2 sentence response: {l_str}", streamer_name=streamer_name, stream_title=stream_title)
         print(f"Bot message: {bot_message}")
-        emit('receive_message', json.dumps({"streamer_name": streamer_name, "stream_title": stream_title, "username": streamer_name, "message": bot_message, "usernameColor": "#a83232"}), namespace='/', broadcast=True)
+        emit('receive_message', json.dumps({"stream_id": stream_id, "streamer_name": streamer_name, "stream_title": stream_title, "username": streamer_name, "message": bot_message, "usernameColor": "#a83232"}), namespace='/', broadcast=True)
     
 
 # SocketIO event to load the previous messages (if any)
@@ -139,7 +142,15 @@ def handle_load_messages():
     # # Convert the timestamp to a string format before sending the response
     # for message in messages:
     #     message["timestamp"] = message["timestamp"].strftime('%Y-%m-%d %H:%M:%S')
-    messages = [{"username": msg["username"], "message": msg["message"], "usernameColor": msg["usernameColor"]} for msg in messages]
+    messages = [{
+        "stream_id": msg['stream_id'],
+        "streamer_name": msg['streamer_name'],
+        "stream_title": msg['stream_title'],
+        "username": msg['username'],
+        "message": msg['message'],
+        "usernameColor": msg['usernameColor'],
+        "timestamp": datetime.now().isoformat()
+    } for msg in messages]
     
     # Send the messages to the client
     emit('load_previous_messages', messages)

@@ -53,7 +53,7 @@ export default function LiveScreen(props: ScheduledStreamProps) {
       <VideoPlayer flex={1} startTime={30} videoUrl={(streamData as ScheduledStreamProps).video_url}/>
       
       <StreamDetails {...streamData as ScheduledStreamProps}/>
-      <Chat flex={3} user_id={window.location.port == "8080" ? "Devin" : "Samantha"} {...streamData as ScheduledStreamProps}/>
+      <Chat flex={3} user_id={parseInt(window.location.port) % 2 == 0 ? "Devin" : "Samantha"} {...streamData as ScheduledStreamProps}/>
     </View>
   );
 }

@@ -11,6 +11,7 @@ interface ChatProps {
 }
 
 interface Message {
+    stream_id: string;
     username: string;
     message: string;
     usernameColor: string;
@@ -19,9 +20,10 @@ interface Message {
 const socket = io('http://localhost:5000');
 
 
-export default function Chat({ flex = 1, user_id, streamer_name, stream_title }: ChatProps & ScheduledStreamProps) {
+export default function Chat({ flex = 1, user_id, streamer_name, stream_title, _id }: ChatProps & ScheduledStreamProps) {
 const [messages, setMessages] = useState<Message[]>([
     {   
+        stream_id : _id,
         username: user_id,
         message: 'Hello',  
         usernameColor: '#000',
@@ -33,6 +35,7 @@ const [messages, setMessages] = useState<Message[]>([
         console.log('Message sending2:', message);
         if (username && message) {
             const msgData = {
+                stream_id: _id,
                 streamer_name,
                 stream_title,
                 username,
@@ -51,12 +54,13 @@ const [messages, setMessages] = useState<Message[]>([
     useEffect(() => {
         const joinStream = async () => {
           try {
+            const stream_id = _id;
             const response = await fetch("http://localhost:5000/join_stream", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ username , streamer_name, stream_title }),
+              body: JSON.stringify({ username , streamer_name, stream_title, stream_id }),
             });
       
             const data = await response.text();
@@ -85,7 +89,7 @@ const [messages, setMessages] = useState<Message[]>([
             console.log("Received message:", newMessage);
             setMessages((prevMessages) => {
                 console.log("Previous messages:", prevMessages);
-                if (typeof newMessage === 'string') {
+                if (typeof newMessage === 'string' ) {
                     newMessage = JSON.parse(newMessage);
                 }
                 return [...prevMessages, newMessage];
@@ -106,15 +110,15 @@ const [messages, setMessages] = useState<Message[]>([
     console.log(messages + typeof(messages)),
     <View style={[styles.container, {flex: flex}]}>
         <FlatList
-            ref={flatListRef}  // Set the reference here
-            data={messages}
+            // Set the reference here
+            data={messages.filter((item) => item.stream_id === _id)}
             renderItem={({ item, index }) => (
-                <ChatMessage
-                    username={item.username}
-                    message={item.message}
-                    usernameColor={item.usernameColor}
-                    marginBottom={index === messages.length - 1 ? 60 : 0}
-                />
+                    <ChatMessage
+                            username={item.username}
+                            message={item.message}
+                            usernameColor={item.usernameColor}
+                            marginBottom={index === messages.length - 1 ? 60 : 0}
+                    />
             )}
             keyExtractor={(item, index) => index.toString()}
             inverted={false}  // Prevents list from being flipped upside down
