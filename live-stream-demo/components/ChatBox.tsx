@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, TextInput, Button, StyleSheet } from "react-native";
+import { View, TextInput, Button, StyleSheet, Text } from "react-native";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 // Define the type for the props
 interface ChatBoxProps {
@@ -14,6 +15,7 @@ export default function ChatBox({ sendMessage }: ChatBoxProps) {
       console.log('Message sending1:', message);
       sendMessage(message); // Call the sendMessage prop
       setMessage(""); // Clear the message input after sending
+      //Trigger TextInput to clear the input
     }
   };
 
@@ -25,7 +27,9 @@ export default function ChatBox({ sendMessage }: ChatBoxProps) {
         value={message}
         onChangeText={setMessage}
       />
-      <Button title="Send" onPress={handleSendMessage} />
+      <TouchableOpacity style={styles.button} onPress={() => handleSendMessage()}>
+          <Text style={styles.buttonText}>Send</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -45,5 +49,15 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginRight: 10,
+  },
+  button: {
+    backgroundColor: "#CA442C",
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
