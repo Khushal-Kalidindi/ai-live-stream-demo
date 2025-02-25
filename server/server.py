@@ -58,7 +58,6 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     raise ValueError("Please set the OPENAI_API_KEY environment variable")
 def generate_llm_response(query: str, streamer_name: str, stream_title: str) -> str:
-    # context_string = " ".join(doc['metadata']['text'] for doc in context['matches'])
     prompt_template = (
         "Context: Your name is {streamer_name} You are the host of a stream, in the middle of doing {stream_title}\n"
         "{query}\n"
@@ -84,14 +83,13 @@ def index():
 @app.route('/join_stream', methods=['POST'])
 def join_stream():
     data = request.json
-    print("FUCK")
     print(data)
     username = data.get("username")
     stream_id = data.get("stream_id")
     streamer_name = data.get("streamer_name")
     stream_title = data.get("stream_title")
     print(f"User joined stream {username}")
-    message = generate_llm_response(f"Greet the user {username} who just joined the stream, help them join in what you are doing", streamer_name=streamer_name, stream_title=stream_title)
+    message = generate_llm_response(f"Greet the user {username} who just joined the stream, help them join in what you are doing. Respond in 3-4 sentences", streamer_name=streamer_name, stream_title=stream_title)
     handle_send_message({"stream_id": stream_id, "streamer_name": streamer_name, "stream_title": stream_title,"username": streamer_name, "message": message, "usernameColor": "#a83232"})
     return "User joined stream!"
 
@@ -130,7 +128,7 @@ def handle_send_message(data):
         stream_id = last_message["stream_id"]
         bot_message = generate_llm_response(f"Respond to this message in a casual 1-2 sentence response: {l_str}", streamer_name=streamer_name, stream_title=stream_title)
         print(f"Bot message: {bot_message}")
-        emit('receive_message', json.dumps({"stream_id": stream_id, "streamer_name": streamer_name, "stream_title": stream_title, "username": streamer_name, "message": bot_message, "usernameColor": "#a83232"}), namespace='/', broadcast=True)
+        handle_send_message({"stream_id": stream_id, "streamer_name": streamer_name, "stream_title": stream_title,"username": streamer_name, "message": bot_message, "usernameColor": "#a83232"})
     
 
 # SocketIO event to load the previous messages (if any)
